@@ -9,7 +9,7 @@
             "program": "${workspaceFolder}/bin/Debug/net5.0/client-server-transfer.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal",
+            "console": "externalTerminal",
             "stopAtEntry": false
         },
         {

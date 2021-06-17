@@ -4,17 +4,11 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Text;
 
-
-
-public class AsynchronousClient
+public class Program
 {
-
-
-
-
-    public static int Main(String[] args)
+    public static void Main(String[] args)
     {
-        StartClient();
-        return 0;
+        var commandManager = new CommandManager();
+        var remoteCommand = commandManager.Menu();
     }
 }
