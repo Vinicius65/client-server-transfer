@@ -2,23 +2,53 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Local) Console",
+            "name": "(Client) Console",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/bin/Debug/net5.0/client-server-transfer.dll",
-            "args": [],
+            "args": [
+                "client"
+            ],
             "cwd": "${workspaceFolder}",
             "console": "externalTerminal",
             "stopAtEntry": false
         },
         {
-            "name": "(Docker) Console",
+            "name": "(Server) Console",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/bin/Debug/net5.0/client-server-transfer.dll",
+            "args": [
+                "server"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "externalTerminal",
+            "stopAtEntry": false
+        },
+        {
+            "name": "(Client) Docker",
             "type": "docker",
             "request": "launch",
             "preLaunchTask": "docker-run: debug",
             "netCore": {
-                "appProject": "${workspaceFolder}/client-server-transfer.csproj"
+                "appProject": "${workspaceFolder}/client-server-transfer.csproj",
+                "args": [
+                    "client"
+                ]
+            },
+        },
+        {
+            "name": "(Server) Docker",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "netCore": {
+                "appProject": "${workspaceFolder}/client-server-transfer.csproj",
+                "args": [
+                    "server"
+                ]
             },
         }
     ]

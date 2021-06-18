@@ -11,11 +11,7 @@ using static Util;
 
 public class CommandManager
 {
-    public static readonly string RegexValue = "ls|pwd|down|up|exit";
-    public static readonly string RegexHost = "local|remote";
-    public static readonly Regex MountCommandRegex = new Regex($@"(^|\s+)({RegexValue})\s+({RegexHost}) (?:\S+?)($| )");
-
-
+    public static readonly Regex MountCommandRegex = new(@"^(local|remote)\s+(ls|pwd|down|up|exit) ?(\S+)?$");
     private Dictionary<string, Command> _commandMap = new();
 
     public CommandManager() => Init();
@@ -53,14 +49,6 @@ public class CommandManager
             Describe = "Fazer upĺoad do arquivo informando o nome entre chaves. Ex: up meuarquivo.png",
             Execute = (arg) => File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), arg))
         });
-
-        // EXIT
-        _commandMap.Add("exit", new Command
-        {
-            Value = "exit",
-            Describe = "Fechar conexão",
-            Execute = (arg) => null
-        });
     }
 
     public List<(string, string)> Options() => _commandMap.Select(c => (c.Value.Value, c.Value.Describe)).ToList();
@@ -74,50 +62,25 @@ public class CommandManager
         throw new ArgumentException("Commando informado incorreto...");
     }
 
-    public (string, string, string) GetCommandTupla(string unformatedCommand)
+    public (bool, string, string) GetCommandTupla(string unformatedCommand)
     {
         var commandList = MountCommandRegex.Match(unformatedCommand).Groups.Values.Select(v => v.Value).Skip(1).Take(3).ToArray();
-        return (commandList[0], commandList[1], commandList[3]);
+        var argumentErrorMessage = "Informe o comando corretamente: ex: {host} {option} {argument}";
+
+        var isIncorretNumberArgument = commandList.Count() != 3;
+        if (isIncorretNumberArgument)
+            throw new ArgumentException(argumentErrorMessage);
+
+
+        var isInvalidCommand = string.IsNullOrWhiteSpace(commandList[0]);
+        var lackOfArgument = new string[] { "down", "up" }.Contains(commandList[1]) && string.IsNullOrWhiteSpace(commandList[2]);
+
+        if (isInvalidCommand || lackOfArgument)
+            throw new ArgumentException(argumentErrorMessage);
+
+        var isLocal = commandList[0] == "local";
+        return (isLocal, commandList[1], commandList[2]);
     }
 
-    public Byte[] Menu()
-    {
-        var commandManager = new CommandManager();
-        var messageOptions = string.Join("", commandManager.Options().Select(opt => $"\n{opt.Item1,-20} -- {opt.Item2}"));
-        var messageHosts = $"{"\nlocal",20} {"\nremote",20}";
-        var messageEx = "\nlocal ls\nremote ls\nlocal down arquivo.png\nremote pwd";
-        while (true)
-        {
-            var commandOption = RPrint($@"
-                -*- INFORME A OPÇÃO DESEJADA -*-
-                
-                *HOSTS*
-                    {messageHosts}
 
-                *OPTION*
-                    {messageOptions}
-
-                EX:
-                    {messageEx}
-                -*-                          -*-
-            ");
-
-            var (host, command, argument) = commandManager.GetCommandTupla(commandOption);
-            if (host == "local")
-            {
-                try
-                {
-                    return commandManager.RunCommand(command, argument);
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-            else
-            {
-                return Encoding.ASCII.GetBytes($"{host} {command} {argument}");
-            }
-        }
-    }
 }
