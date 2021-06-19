@@ -1,19 +1,22 @@
 ﻿using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading;
-using System.Text;
 
 public class Program
 {
     public static void Main(String[] args)
     {
+        HandleCallServerOrClient(args);
+    }
+
+    public static void HandleCallServerOrClient(string[] args)
+    {
         try
         {
-            if (args[0] == "client")
+            var serverOrClient = args[0];
+
+            if (serverOrClient == "client")
                 RunClient();
-            else if (args[0] == "server")
-                new Server().StartListening();
+            else if (serverOrClient == "server")
+                RunServer();
             else
                 throw new();
         }
@@ -23,6 +26,8 @@ public class Program
             RunClient();
         }
     }
+
+    public static void RunServer() => new Server().StartListening();
 
     public static void RunClient()
     {

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -10,10 +9,26 @@ public class Client
 {
     private Socket socket;
     private CommandManager CommandManager = new CommandManager();
+
+
+    public void HandleCommand(string option, string argument, bool isLocal)
+    {
+        if (isLocal)
+        {
+            var bytesResponse = CommandManager.RunCommand(option, argument);
+            Console.WriteLine(Encoding.ASCII.GetString(bytesResponse));
+        }
+        else
+        {
+            var bytesReceived = CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
+            Console.WriteLine("Echoed test = {0}", Encoding.ASCII.GetString(bytesReceived));
+        }
+    }
+
     public void EstabilishConnection(IPAddress ipAddress, Port port)
     {
+        Console.WriteLine("Estabelecendo conexão...");
         var remoteAddress = new IPEndPoint(ipAddress, port.Value);
-        socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
         try
         {
             socket.Connect(remoteAddress);
@@ -27,40 +42,7 @@ public class Client
         {
             Console.WriteLine("Unexpected exception : {0}", e.ToString());
         }
-    }
-
-    public void HandleCommand(string option, string argument, bool isLocal)
-    {
-        if (isLocal)
-        {
-            var bytesResponse = CommandManager.RunCommand(option, argument);
-            Console.WriteLine(Encoding.ASCII.GetString(bytesResponse));
-        }
-        else
-        {
-            socket.Send(Encoding.ASCII.GetBytes($"{option} {argument}"));
-
-            var arrayBytes = HandleReceivedBytes(socket);
-
-            Console.WriteLine("Echoed test = {0}", Encoding.ASCII.GetString(arrayBytes));
-        }
-    }
-
-    public static byte[] HandleReceivedBytes(Socket socket)
-    {
-        var byteList = new List<byte[]>();
-        byte[] receivedByte = new byte[1024];
-        socket.Receive(receivedByte);
-
-        var countBytes = socket.Receive(receivedByte, receivedByte.Length, 0);
-        byteList.Add(receivedByte);
-
-        while (countBytes > 0)
-        {
-            countBytes = socket.Receive(receivedByte, receivedByte.Length, 0);
-            byteList.Add(receivedByte);
-        }
-        return byteList.SelectMany(b => b.ToArray()).ToArray();
+        Console.WriteLine("Conexão estabelecida");
     }
 
 

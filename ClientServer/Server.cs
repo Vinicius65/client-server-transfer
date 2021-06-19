@@ -1,56 +1,45 @@
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 public class Server
 {
+    private Socket socketServer;
     private CommandManager commandManager = new CommandManager();
 
     public void StartListening()
     {
-        byte[] bytes = new Byte[1024];
+        Linten();
+        ConnectionLoop();
+    }
 
+    public void Linten()
+    {
         var port = 7777;
         IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
         IPAddress ipAddress = ipHostInfo.AddressList[0];
         IPEndPoint localEndPoint = new IPEndPoint(ipAddress, port);
 
-        Socket listener = new Socket(ipAddress.AddressFamily,
-            SocketType.Stream, ProtocolType.Tcp);
+        socketServer = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
-        try
+        socketServer.Bind(localEndPoint);
+        socketServer.Listen(10);
+        Console.WriteLine($"Esperando conexão no ip {ipAddress} e porta {port}...");
+    }
+
+    public void ConnectionLoop()
+    {
+        while (true)
         {
-            listener.Bind(localEndPoint);
-            listener.Listen(10);
-
-            while (true)
+            try
             {
-                Console.WriteLine($"Waiting for a connection on ip {ipAddress} and port {port}...");
-                Socket handler = listener.Accept();
-
-                int bytesRec = handler.Receive(bytes);
-                var command = Encoding.ASCII.GetString(bytes, 0, bytesRec);
-                if (command == "exit")
-                {
-                    handler.Shutdown(SocketShutdown.Both);
-                    handler.Close();
-                    System.Environment.Exit(0);
-                }
-                else
-                {
-                    var option = command.Split(" ").First();
-                    var argument = command.Split(" ").LastOrDefault();
-                    var resultBytes = commandManager.RunCommand(option, argument);
-                    handler.Send(resultBytes);
-                }
+                Socket socket = socketServer.Accept();
+                CommunicationManager.HandleServerToClient(socket, commandManager);
             }
-
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.ToString());
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
     }
 }
