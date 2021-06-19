@@ -1,7 +1,15 @@
--- entrar na pasta raiz do projeto e rodar, esse comando criará a imagem
+// OS COMANDOS ABAIXO LEVANTAM UM SERVIDOR
 
+-- entrar na pasta raiz do projeto e rodar, esse comando criará a imagem
 docker build -t clientservertransfer:ClientServer .
 
 -- esse comando criará e executará o container, abrindo a porta 7777 local e do docker, o 'server' no final é passado como argumento para especificar que será rodado o server e não client
 docker run --rm -p 7777:7777 clientservertransfer:ClientServer server
 
+
+// PARA RODAR O CLIENT QUE SE CONECTARÁ AO SERVIDOR
+
+-- o comando abaixo roda o client automaticamente, ele pedirá o endereço de conexçao e porta, basta dar enter que ele preencherá automaticamente
+dotnet run
+
+-- depois só seguir o tutorial que aparecerá no display com os comandos
