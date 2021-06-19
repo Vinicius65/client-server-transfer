@@ -43,12 +43,7 @@ public class CommandManager
         {
             Value = "up {file}",
             Describe = "Fazer upĺoad do arquivo informando o nome entre chaves. Ex: up meuarquivo.png",
-            Execute = (arg) =>
-            {
-                var bytesfile = File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), arg));
-                var commandWithFile = new List<byte[]> { Encoding.ASCII.GetBytes($"up {arg} "), bytesfile };
-                return commandWithFile.SelectMany(b => b).ToArray();
-            }
+            Execute = (arg) => File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), arg))
         });
     }
 
@@ -83,13 +78,11 @@ public class CommandManager
         if (isInvalidCommand || lackOfArgument)
             throw new ArgumentException(argumentErrorMessage);
 
-        if (host == "local" && option == "down")
-            throw new ArgumentException("Quando selecionado down, o host deve ser 'remote'. Ex: remote down file.txt");
-        else if (host == "remote" && option == "up")
-            throw new ArgumentException("Quando selecionado up, o host deve ser 'local'. Ex: local up file.txt");
+        if (host == "local" && (option == "down" || option == "up"))
+            throw new ArgumentException("Quando selecionado 'down' ou 'up', o host deve ser 'remote'. Ex: remote down file.txt");
 
-        var isLocal = commandList[0] == "local";
-        return (isLocal, commandList[1], commandList[2]);
+        var isLocal = host == "local";
+        return (isLocal, option, argument);
     }
 
 

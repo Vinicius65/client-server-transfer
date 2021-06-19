@@ -13,14 +13,18 @@ public static class CommunicationManager
         socket.Send(bytesSend);
         return HandleReceivedBytes(socket);
     }
+    public static byte[] HandleClientToServer(Socket socket, byte[] bytesSend)
+    {
+        socket.Send(bytesSend);
+        return HandleReceivedBytes(socket);
+    }
 
     public static void HandleServerToClient(Socket socket, CommandManager commandManager)
     {
         var bytesReceived = HandleReceivedBytes(socket);
-        Console.WriteLine("Dados recebidos...");
         var command = Encoding.ASCII.GetString(bytesReceived);
         var option = command.Split(" ")[0];
-        var argument = command.Split(" ")[1];
+        var argument = command.Split(" ").Skip(1).FirstOrDefault();
 
         if (option == "exit")
         {
@@ -30,16 +34,24 @@ public static class CommunicationManager
         }
         else if (option == "up")
         {
-            var stringFile = string.Join("", command.Split(" ").Skip(2).ToArray());
-            var bytesFile = Encoding.ASCII.GetBytes(stringFile);
+            socket.Send(Encoding.ASCII.GetBytes("Aguardando arquivo"));
+            var bytesFile = HandleReceivedBytes(socket);
             string pathFile = Util.GetFilePathToSave(argument);
             File.WriteAllBytes(pathFile, bytesFile);
-            socket.Send(Encoding.ASCII.GetBytes("Arquivo salvo..."));
+            socket.Send(Encoding.ASCII.GetBytes("Feito upload do arquivo"));
         }
         else
         {
-            var resultBytes = commandManager.RunCommand(option, argument);
-            socket.Send(resultBytes);
+            try
+            {
+                var resultBytes = commandManager.RunCommand(option, argument);
+                socket.Send(resultBytes);
+
+            }
+            catch (Exception)
+            {
+                socket.Send(Encoding.ASCII.GetBytes("error"));
+            }
         }
     }
 

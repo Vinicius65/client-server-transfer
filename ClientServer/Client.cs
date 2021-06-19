@@ -14,18 +14,48 @@ public class Client
 
     public void HandleCommand(string option, string argument, bool isLocal)
     {
-        var bytesResponse = HandleGetBytes(option, argument, isLocal);
-        if (option == "down" || option == "up")
+        if (isLocal)
         {
-            var filePath = GetFilePathToSave(argument);
-            File.WriteAllBytes(filePath, bytesResponse);
+            if (option == "exit")
+                CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
+            var bytes = CommandManager.RunCommand(option, argument);
+            Console.WriteLine(Encoding.ASCII.GetString(bytes));
+        }
+        else if (option == "up")
+        {
+            try
+            {
+                var bytesFileLocal = CommandManager.RunCommand(option, argument);
+                CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
+                var bytesResponse = CommunicationManager.HandleClientToServer(socket, bytesFileLocal);
+                Console.WriteLine(Encoding.ASCII.GetString(bytesResponse));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
         else
-            Console.WriteLine(Encoding.ASCII.GetString(bytesResponse));
+        {
+            var bytesResponse = CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
+            var stringRespose = Encoding.ASCII.GetString(bytesResponse);
+            if (option == "down")
+            {
+                if (stringRespose == "error")
+                    Console.WriteLine("Erro ao baixar o arquivo (verifique se o nome esta correto)");
+                else
+                {
+                    var filePath = GetFilePathToSave(argument);
+                    File.WriteAllBytes(filePath, bytesResponse);
+                    Console.WriteLine("Arquivo baixado com sucesso");
+                }
+            }
+            else
+            {
+                Console.WriteLine(stringRespose);
+            }
+        }
     }
-
-    private byte[] HandleGetBytes(string option, string argument, bool isLocal)
-        => isLocal ? CommandManager.RunCommand(option, argument) : CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
 
 
     public void EstabilishConnection(IPAddress ipAddress, Port port)
@@ -103,25 +133,16 @@ public class Client
 
     public void Menu()
     {
-        var commandManager = new CommandManager();
-        var messageOptions = string.Join("", commandManager.Options().Select(opt => $"\n{opt.Item1,-20} -- {opt.Item2}"));
-        var messageHosts = $"{"local",20} {"\nremote",20}\n";
-        var messageEx = "local ls\nremote ls\nlocal down arquivo.png\nremote pwd\n";
-        var messageTemplate = "{host} {option} {argument}\n";
         Console.WriteLine($@"
-    *TEMPLATE*
-{messageTemplate}
+COMANDOS:
 
-    *HOSTS*
-{messageHosts}
-
-    *OPTION*
-{messageOptions}
-
-    *EX:*
-{messageEx}
-
-Ou escreva 'exit' para sair do sistema...
+local ls                   -- lista o diretório atual
+remote ls                  -- listar o diretório remoto
+local pwd                  -- ver caminho completo do diretório atual
+remote pwd                 -- ver caminho completo do diretório remoto
+remote up (argument)        -- fazer upload de um arquivo. Ex: local up file.txt
+remote down (argument)     -- fazer download de um arquivo. Ex: remote down foto.png
+exit                        
             ");
 
     }
