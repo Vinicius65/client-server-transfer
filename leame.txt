@@ -1,15 +1,28 @@
+// criar a rede compartilhada entre os dois containers
+
+docker network create rede-docker
+
 // OS COMANDOS ABAIXO LEVANTAM UM SERVIDOR
 
 -- entrar na pasta raiz do projeto e rodar, esse comando criará a imagem
 docker build -t clientservertransfer:ClientServer .
 
 -- esse comando criará e executará o container, abrindo a porta 7777 local e do docker, o 'server' no final é passado como argumento para especificar que será rodado o server e não client
-docker run --rm -p 7777:7777 clientservertransfer:ClientServer server
+docker run --rm --network rede-docker -p 7777:7777 --name server clientservertransfer:ClientServer server
 
 
-// PARA RODAR O CLIENT QUE SE CONECTARÁ AO SERVIDOR
+// PARA RODAR O CLIENT LOCAL QUE SE CONECTARÁ AO SERVIDOR
 
 -- o comando abaixo roda o client automaticamente, ele pedirá o endereço de conexçao e porta, basta dar enter que ele preencherá automaticamente
 dotnet run
 
 -- depois só seguir o tutorial que aparecerá no display com os comandos
+
+// RODAR O CLIENT VIA DOCKER
+
+-- para rodar o cliente via docker, precisamos informar a mesma rede onde o cliente foi criado, e o nome do nosso container servidor
+docker run -it --rm --network rede-docker -p 7777 clientservertransfer:ClientServer
+
+-- nas opções que seguirão, quando for perguntado o endereço do servidor, é necessário informar 'server', é o mesmo nome que configuramos para levantar o servidor (...--name server...), assim,
+-- ele conseguirá resolver o dns
+-- esse tipo de config não é necessário quando se usa o docker-compose, todos os container no docker-compose automaticamente são instanciados em uma rede bridge e o nome do serviço se torna o nome dns
