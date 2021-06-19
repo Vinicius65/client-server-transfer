@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -13,22 +14,25 @@ public class Client
 
     public void HandleCommand(string option, string argument, bool isLocal)
     {
-        if (isLocal)
+        var bytesResponse = HandleGetBytes(option, argument, isLocal);
+        if (option == "down" || option == "up")
         {
-            var bytesResponse = CommandManager.RunCommand(option, argument);
-            Console.WriteLine(Encoding.ASCII.GetString(bytesResponse));
+            var filePath = GetFilePathToSave(argument);
+            File.WriteAllBytes(filePath, bytesResponse);
         }
         else
-        {
-            var bytesReceived = CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
-            Console.WriteLine("Echoed test = {0}", Encoding.ASCII.GetString(bytesReceived));
-        }
+            Console.WriteLine(Encoding.ASCII.GetString(bytesResponse));
     }
+
+    private byte[] HandleGetBytes(string option, string argument, bool isLocal)
+        => isLocal ? CommandManager.RunCommand(option, argument) : CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
+
 
     public void EstabilishConnection(IPAddress ipAddress, Port port)
     {
         Console.WriteLine("Estabelecendo conexão...");
         var remoteAddress = new IPEndPoint(ipAddress, port.Value);
+        socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
         try
         {
             socket.Connect(remoteAddress);
@@ -48,6 +52,7 @@ public class Client
 
     public void Exit()
     {
+        socket.Send(Encoding.ASCII.GetBytes("exit"));
         socket.Shutdown(SocketShutdown.Both);
         socket.Close();
         System.Environment.Exit(0);

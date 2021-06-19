@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 public static class Util
 {
@@ -11,4 +12,6 @@ public static class Util
         else
             return read;
     }
+
+    public static string GetFilePathToSave(string argument) => Path.Combine(Directory.GetCurrentDirectory(), $"{DateTime.Now.ToFileTime().ToString()}{argument}");
 }

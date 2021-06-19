@@ -29,11 +29,12 @@ public class Server
 
     public void ConnectionLoop()
     {
+        Socket socket = socketServer.Accept();
+        Console.WriteLine("Conexão estabelecida");
         while (true)
         {
             try
             {
-                Socket socket = socketServer.Accept();
                 CommunicationManager.HandleServerToClient(socket, commandManager);
             }
             catch (Exception e)

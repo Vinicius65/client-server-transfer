@@ -43,7 +43,12 @@ public class CommandManager
         {
             Value = "up {file}",
             Describe = "Fazer upĺoad do arquivo informando o nome entre chaves. Ex: up meuarquivo.png",
-            Execute = (arg) => File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), arg))
+            Execute = (arg) =>
+            {
+                var bytesfile = File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), arg));
+                var commandWithFile = new List<byte[]> { Encoding.ASCII.GetBytes($"up {arg} "), bytesfile };
+                return commandWithFile.SelectMany(b => b).ToArray();
+            }
         });
     }
 
@@ -68,11 +73,20 @@ public class CommandManager
             throw new ArgumentException(argumentErrorMessage);
 
 
-        var isInvalidCommand = string.IsNullOrWhiteSpace(commandList[0]);
-        var lackOfArgument = new string[] { "down", "up" }.Contains(commandList[1]) && string.IsNullOrWhiteSpace(commandList[2]);
+        var host = commandList[0];
+        var option = commandList[1];
+        var argument = commandList[2];
+
+        var isInvalidCommand = string.IsNullOrWhiteSpace(host);
+        var lackOfArgument = new string[] { "down", "up" }.Contains(option) && string.IsNullOrWhiteSpace(argument);
 
         if (isInvalidCommand || lackOfArgument)
             throw new ArgumentException(argumentErrorMessage);
+
+        if (host == "local" && option == "down")
+            throw new ArgumentException("Quando selecionado down, o host deve ser 'remote'. Ex: remote down file.txt");
+        else if (host == "remote" && option == "up")
+            throw new ArgumentException("Quando selecionado up, o host deve ser 'local'. Ex: local up file.txt");
 
         var isLocal = commandList[0] == "local";
         return (isLocal, commandList[1], commandList[2]);
