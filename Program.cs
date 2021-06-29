@@ -32,8 +32,8 @@ public class Program
     public static void RunClient()
     {
         var client = new Client();
-        var (ipAddres, port) = client.GetRemoteAddress();
-        client.EstabilishConnection(ipAddres, port);
+        var remoteAdress = client.GetRemoteAddress();
+        client.EstabilishConnection(remoteAdress);
         client.Menu();
         while (true)
         {

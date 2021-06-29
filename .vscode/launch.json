@@ -2,54 +2,25 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Client) Console",
+            // Use IntelliSense to find out which attributes exist for C# debugging
+            // Use hover for the description of the existing attributes
+            // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+            "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net5.0/client-server-transfer.dll",
-            "args": [
-                "client"
-            ],
-            "cwd": "${workspaceFolder}",
-            "console": "externalTerminal",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/client-server-transfer-master/bin/Debug/net5.0/client-server-transfer.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/client-server-transfer-master",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "internalConsole",
             "stopAtEntry": false
         },
         {
-            "name": "(Server) Console",
+            "name": ".NET Core Attach",
             "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net5.0/client-server-transfer.dll",
-            "args": [
-                "server"
-            ],
-            "cwd": "${workspaceFolder}",
-            "console": "externalTerminal",
-            "stopAtEntry": false
-        },
-        {
-            "name": "(Client) Docker",
-            "type": "docker",
-            "request": "launch",
-            "preLaunchTask": "docker-run: debug",
-            "netCore": {
-                "appProject": "${workspaceFolder}/client-server-transfer.csproj",
-                "args": [
-                    "client"
-                ]
-            },
-        },
-        {
-            "name": "(Server) Docker",
-            "type": "docker",
-            "request": "launch",
-            "preLaunchTask": "docker-run: debug",
-            "netCore": {
-                "appProject": "${workspaceFolder}/client-server-transfer.csproj",
-                "args": [
-                    "server"
-                ]
-            },
+            "request": "attach"
         }
     ]
 }
