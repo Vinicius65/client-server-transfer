@@ -7,56 +7,19 @@ using System.Net.Sockets;
 using System.Text;
 public static class CommunicationManager
 {
-    public static byte[] HandleClientToServer(Socket socket, string stringSend)
+    public static byte[] SendMessageAndReceivedMessage(Socket socket, string stringSend)
     {
         var bytesSend = Encoding.ASCII.GetBytes(stringSend);
         socket.Send(bytesSend);
-        return HandleReceivedBytes(socket);
+        return ReceivedBytes(socket);
     }
-    public static byte[] HandleClientToServer(Socket socket, byte[] bytesSend)
+    public static byte[] SendMessageAndReceivedMessage(Socket socket, byte[] bytesSend)
     {
         socket.Send(bytesSend);
-        return HandleReceivedBytes(socket);
+        return ReceivedBytes(socket);
     }
 
-    public static void HandleServerToClient(Socket socket, CommandManager commandManager)
-    {
-        var bytesReceived = HandleReceivedBytes(socket);
-        var command = Encoding.ASCII.GetString(bytesReceived);
-        var option = command.Split(" ")[0];
-        var argument = command.Split(" ").Skip(1).FirstOrDefault();
-
-        if (option == "exit")
-        {
-            socket.Shutdown(SocketShutdown.Both);
-            socket.Close();
-            System.Environment.Exit(0);
-        }
-        else if (option == "up")
-        {
-            socket.Send(Encoding.ASCII.GetBytes("Aguardando arquivo"));
-            var bytesFile = HandleReceivedBytes(socket);
-            string pathFile = Util.GetFilePathToSave(argument);
-            File.WriteAllBytes(pathFile, bytesFile);
-            socket.Send(Encoding.ASCII.GetBytes("Feito upload do arquivo"));
-        }
-        else
-        {
-            try
-            {
-                var resultBytes = commandManager.RunCommand(option, argument);
-                socket.Send(resultBytes);
-
-            }
-            catch (Exception)
-            {
-                socket.Send(Encoding.ASCII.GetBytes("error"));
-            }
-        }
-    }
-
-
-    public static byte[] HandleReceivedBytes(Socket socket)
+    public static byte[] ReceivedBytes(Socket socket)
     {
         var lenArray = 512;
         var byteList = new List<byte[]>();
@@ -79,6 +42,44 @@ public static class CommunicationManager
         Console.WriteLine();
         return byteList.SelectMany(b => b.ToArray()).ToArray();
     }
+    public static void HandleRemoteCommand(Socket socket, CommandManager commandManager)
+    {
+        var bytesReceived = ReceivedBytes(socket);
+        var command = Encoding.ASCII.GetString(bytesReceived);
+        var option = command.Split(" ")[0];
+        var argument = command.Split(" ").Skip(1).FirstOrDefault();
+
+        if (option == "exit")
+        {
+            socket.Shutdown(SocketShutdown.Both);
+            socket.Close();
+            System.Environment.Exit(0);
+        }
+        else if (option == "up")
+        {
+            socket.Send(Encoding.ASCII.GetBytes("Aguardando arquivo"));
+            var bytesFile = ReceivedBytes(socket);
+            string pathFile = Util.GetFilePathToSave(argument);
+            File.WriteAllBytes(pathFile, bytesFile);
+            socket.Send(Encoding.ASCII.GetBytes("Feito upload do arquivo"));
+        }
+        else
+        {
+            try
+            {
+                var resultBytes = commandManager.RunCommand(option, argument);
+                socket.Send(resultBytes);
+
+            }
+            catch (Exception)
+            {
+                socket.Send(Encoding.ASCII.GetBytes("error"));
+            }
+        }
+    }
+
+
+
 
     private static void PrintTotal(int total)
     {

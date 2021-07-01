@@ -36,7 +36,7 @@ public class Server
 
         //solicitar aqui usuario e senha
         Socket socket = socketServer.Accept();
-        var bytesReceived = CommunicationManager.HandleReceivedBytes(socket);
+        var bytesReceived = CommunicationManager.ReceivedBytes(socket);
         var usernameSenha = Encoding.ASCII.GetString(bytesReceived);
         string[] acesso = usernameSenha.Split("||");
 
@@ -46,7 +46,7 @@ public class Server
             {
                 try
                 {
-                    CommunicationManager.HandleServerToClient(socket, commandManager);
+                    CommunicationManager.HandleRemoteCommand(socket, commandManager);
                 }
                 catch (Exception e)
                 {

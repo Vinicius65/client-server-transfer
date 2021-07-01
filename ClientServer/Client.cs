@@ -18,7 +18,7 @@ public class Client
         if (isLocal)
         {
             if (option == "exit")
-                CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
+                CommunicationManager.SendMessageAndReceivedMessage(socket, $"{option} {argument}");
             var bytes = CommandManager.RunCommand(option, argument);
             Console.WriteLine(Encoding.ASCII.GetString(bytes));
         }
@@ -27,8 +27,8 @@ public class Client
             try
             {
                 var bytesFileLocal = CommandManager.RunCommand(option, argument);
-                CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
-                var bytesResponse = CommunicationManager.HandleClientToServer(socket, bytesFileLocal);
+                CommunicationManager.SendMessageAndReceivedMessage(socket, $"{option} {argument}");
+                var bytesResponse = CommunicationManager.SendMessageAndReceivedMessage(socket, bytesFileLocal);
                 Console.WriteLine(Encoding.ASCII.GetString(bytesResponse));
             }
             catch (Exception ex)
@@ -38,7 +38,7 @@ public class Client
         }
         else
         {
-            var bytesResponse = CommunicationManager.HandleClientToServer(socket, $"{option} {argument}");
+            var bytesResponse = CommunicationManager.SendMessageAndReceivedMessage(socket, $"{option} {argument}");
             var stringRespose = Encoding.ASCII.GetString(bytesResponse);
             if (option == "down")
             {
@@ -59,7 +59,7 @@ public class Client
     }
 
 
-    public void EstabilishConnection(conectionserver cnserver)
+    public void EstabilishConnection(ConectionServer cnserver)
     {
         Console.WriteLine("Estabelecendo conexão...");
         var remoteAddress = new IPEndPoint(cnserver.IPAddress, cnserver.Port.Value);
@@ -67,7 +67,7 @@ public class Client
         try
         {
             socket.Connect(remoteAddress);
-            var retorno = CommunicationManager.HandleClientToServer(socket, cnserver.username + "||" + cnserver.senha);
+            var retorno = CommunicationManager.SendMessageAndReceivedMessage(socket, cnserver.username + "||" + cnserver.senha);
             Console.WriteLine("Você se conectou ao endereço {0}", socket.RemoteEndPoint.ToString());
         }
         catch (SocketException se)
@@ -106,63 +106,5 @@ public class Client
                 Console.WriteLine(ex.Message);
             }
         }
-    }
-
-    public class conectionserver
-    {
-
-        public IPAddress IPAddress { get; set; }
-        public Port Port { get; set; }
-
-        public String username { get; set; }
-
-        public String senha { get; set; }
-    }
-    public conectionserver GetRemoteAddress()
-    {
-        var conectionserver = new conectionserver();
-        var message = "Informe o endereço remoto (ex: 192.168.0.1) ou host name (ex: www.enderecoremoto.com) ou click 'enter' para localhost (endereço local): ";
-        var addressOrDns = RPrint(message, Dns.GetHostName());
-        try
-        {
-            conectionserver.IPAddress = Dns.GetHostEntry(addressOrDns).AddressList[0];
-
-            var port = RPrint("Informe a porta ou enter para porta 7777", "7777");
-            conectionserver.Port = new Port(port);
-
-            conectionserver.username = RPrint("informe o usuario:");
-
-            conectionserver.senha = RPrint("Informe a senha:");
-
-            return conectionserver;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            throw new ArgumentOutOfRangeException("Endereço ip ou host name inválido");
-        }
-        catch (SocketException)
-        {
-            throw new Exception("Não foi possível conferir o endereço informado, verifique se a rede está conectada e se o endereço é válido");
-        }
-        catch (FormatException)
-        {
-            throw new Exception("Informe uma porta válida (inteiro de 1 a 65535)");
-        }
-    }
-
-    public void Menu()
-    {
-        Console.WriteLine($@"
-COMANDOS:
-
-local ls                   -- lista o diretório atual
-remote ls                  -- listar o diretório remoto
-local pwd                  -- ver caminho completo do diretório atual
-remote pwd                 -- ver caminho completo do diretório remoto
-remote up (argument)        -- fazer upload de um arquivo. Ex: local up file.txt
-remote down (argument)     -- fazer download de um arquivo. Ex: remote down foto.png
-exit                        
-            ");
-
     }
 }

@@ -32,9 +32,9 @@ public class Program
     public static void RunClient()
     {
         var client = new Client();
-        var remoteAdress = client.GetRemoteAddress();
+        var remoteAdress = Menu.Connection();
         client.EstabilishConnection(remoteAdress);
-        client.Menu();
+        Menu.Commands();
         while (true)
         {
             var (isLocal, option, argument) = client.GetCommand();
