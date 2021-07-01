@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using static Util;
 
+
 public class Client
 {
     private Socket socket;
@@ -58,14 +59,15 @@ public class Client
     }
 
 
-    public void EstabilishConnection(IPAddress ipAddress, Port port)
+    public void EstabilishConnection(conectionserver cnserver)
     {
         Console.WriteLine("Estabelecendo conexão...");
-        var remoteAddress = new IPEndPoint(ipAddress, port.Value);
-        socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+        var remoteAddress = new IPEndPoint(cnserver.IPAddress, cnserver.Port.Value);
+        socket = new Socket(cnserver.IPAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
         try
         {
             socket.Connect(remoteAddress);
+            var retorno = CommunicationManager.HandleClientToServer(socket, cnserver.username + "||" + cnserver.senha);
             Console.WriteLine("Você se conectou ao endereço {0}", socket.RemoteEndPoint.ToString());
         }
         catch (SocketException se)
@@ -106,16 +108,33 @@ public class Client
         }
     }
 
-    public (IPAddress, Port) GetRemoteAddress()
+    public class conectionserver
     {
-        var message = "Informe o endreço remoto (ex: 192.168.0.1) ou host name (ex: www.enderecoremoto.com) ou click 'enter' para localhost (endereço local): ";
+
+        public IPAddress IPAddress { get; set; }
+        public Port Port { get; set; }
+
+        public String username { get; set; }
+
+        public String senha { get; set; }
+    }
+    public conectionserver GetRemoteAddress()
+    {
+        var conectionserver = new conectionserver();
+        var message = "Informe o endereço remoto (ex: 192.168.0.1) ou host name (ex: www.enderecoremoto.com) ou click 'enter' para localhost (endereço local): ";
         var addressOrDns = RPrint(message, Dns.GetHostName());
         try
         {
-            var ipAddress = Dns.GetHostEntry(addressOrDns).AddressList[0];
+            conectionserver.IPAddress = Dns.GetHostEntry(addressOrDns).AddressList[0];
 
             var port = RPrint("Informe a porta ou enter para porta 7777", "7777");
-            return (ipAddress, new Port(port));
+            conectionserver.Port = new Port(port);
+
+            conectionserver.username = RPrint("informe o usuario:");
+
+            conectionserver.senha = RPrint("Informe a senha:");
+
+            return conectionserver;
         }
         catch (ArgumentOutOfRangeException)
         {

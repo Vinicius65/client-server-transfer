@@ -56,7 +56,7 @@ public static class CommunicationManager
     }
 
 
-    private static byte[] HandleReceivedBytes(Socket socket)
+    public static byte[] HandleReceivedBytes(Socket socket)
     {
         var lenArray = 512;
         var byteList = new List<byte[]>();

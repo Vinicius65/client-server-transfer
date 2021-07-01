@@ -1,12 +1,15 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 public class Server
 {
     private Socket socketServer;
     private CommandManager commandManager = new CommandManager();
 
+    string usuario = "admin";
+    string senha = "123";
     public void StartListening()
     {
         Linten();
@@ -27,20 +30,35 @@ public class Server
         Console.WriteLine($"Esperando conexão no ip {ipAddress} e porta {port}...");
     }
 
+
     public void ConnectionLoop()
     {
+
+        //solicitar aqui usuario e senha
         Socket socket = socketServer.Accept();
-        Console.WriteLine("Conexão estabelecida");
-        while (true)
+        var bytesReceived = CommunicationManager.HandleReceivedBytes(socket);
+        var usernameSenha = Encoding.ASCII.GetString(bytesReceived);
+        string[] acesso = usernameSenha.Split("||");
+
+        if (acesso[0] == usuario && acesso[1] == senha)
         {
-            try
+            while (true)
             {
-                CommunicationManager.HandleServerToClient(socket, commandManager);
+                try
+                {
+                    CommunicationManager.HandleServerToClient(socket, commandManager);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+        }
+
+
+        else
+        {
+            Console.WriteLine("Usuario ou senha invalida");
         }
     }
 }
