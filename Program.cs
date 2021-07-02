@@ -22,7 +22,6 @@ public class Program
         }
         catch (Exception)
         {
-            Console.WriteLine("Se o argumento de {client|server} não for informado, por default será aberta uma conexão de client");
             RunClient();
         }
     }
@@ -32,13 +31,13 @@ public class Program
     public static void RunClient()
     {
         var client = new Client();
-        var remoteAdress = Menu.Connection();
+        var remoteAdress = Menu.GetConnection();
         client.EstabilishConnection(remoteAdress);
-        Menu.Commands();
+        Menu.CommandsMenu();
         while (true)
         {
-            var (isLocal, option, argument) = client.GetCommand();
-            client.HandleCommand(option, argument, isLocal);
+            var (isLocal, option, argument) = Menu.GetCommand();
+            client.HandleClientCommand(option, argument, isLocal);
             Console.WriteLine();
         }
     }

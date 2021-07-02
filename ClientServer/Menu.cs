@@ -1,27 +1,43 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using static Util;
 public static class Menu
 
 {
-    public static void Commands()
+    public static void CommandsMenu()
     {
         Console.WriteLine($@"
-COMANDOS:
+                COMANDOS:
 
-local ls                   -- lista o diretório atual
-remote ls                  -- listar o diretório remoto
-local pwd                  -- ver caminho completo do diretório atual
-remote pwd                 -- ver caminho completo do diretório remoto
-remote up (argument)        -- fazer upload de um arquivo. Ex: local up file.txt
-remote down (argument)     -- fazer download de um arquivo. Ex: remote down foto.png
-exit                        
-            ");
-
+                local ls                   -- lista o diretório atual
+                remote ls                  -- listar o diretório remoto
+                local pwd                  -- ver caminho completo do diretório atual
+                remote pwd                 -- ver caminho completo do diretório remoto
+                remote up (argument)        -- fazer upload de um arquivo. Ex: local up file.txt
+                remote down (argument)     -- fazer download de um arquivo. Ex: remote down foto.png
+                exit                        
+        ");
     }
 
-    public static ConectionServer Connection()
+    public static (bool, string, string) GetCommand()
+    {
+        while (true)
+        {
+            var commandOption = RPrint("Digite o comando: ");
+            try
+            {
+                return CommandManager.GetCommandTupla(commandOption);
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+    }
+
+    public static ConectionServer GetConnection()
     {
         var ConectionServer = new ConectionServer();
         var message = "Informe o endereço remoto (ex: 192.168.0.1) ou host name (ex: www.enderecoremoto.com) ou click 'enter' para localhost (endereço local): ";

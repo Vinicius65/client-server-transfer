@@ -5,17 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-public class CommandManager
+public static class CommandManager
 {
     public static readonly Regex MountCommandRegex = new(@"^(local|remote)\s+(ls|pwd|down|up|exit) ?(\S+)?$");
-    private Dictionary<string, Command> _commandMap = new();
+    private static Dictionary<string, Command> _commandMap = CreateDict();
 
-    public CommandManager() => Init();
 
-    private void Init()
+    private static Dictionary<string, Command> CreateDict()
     {
+        var commandMap = new Dictionary<string, Command>();
         // LS
-        _commandMap.Add("ls", new Command
+        commandMap.Add("ls", new Command
         {
             Value = "ls",
             Describe = "Liste o diretório atual",
@@ -23,7 +23,7 @@ public class CommandManager
         });
 
         // PWD
-        _commandMap.Add("pwd", new Command
+        commandMap.Add("pwd", new Command
         {
             Value = "pwd",
             Describe = "Mostrar o diretório completo",
@@ -31,7 +31,7 @@ public class CommandManager
         });
 
         // DOWN
-        _commandMap.Add("down", new Command
+        commandMap.Add("down", new Command
         {
             Value = "down {file}",
             Describe = "Fazer download do arquivo informando o nome entre chaves. Ex: down meuarquivo.png",
@@ -39,17 +39,18 @@ public class CommandManager
         });
 
         // UP
-        _commandMap.Add("up", new Command
+        commandMap.Add("up", new Command
         {
             Value = "up {file}",
             Describe = "Fazer upĺoad do arquivo informando o nome entre chaves. Ex: up meuarquivo.png",
             Execute = (arg) => File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), arg))
         });
+        return commandMap;
     }
 
-    public List<(string, string)> Options() => _commandMap.Select(c => (c.Value.Value, c.Value.Describe)).ToList();
+    public static List<(string, string)> Options() => _commandMap.Select(c => (c.Value.Value, c.Value.Describe)).ToList();
 
-    public byte[] RunCommand(string key, string arg)
+    public static byte[] RunCommand(string key, string arg)
     {
         if (_commandMap.TryGetValue(key, out var command))
         {
@@ -58,8 +59,11 @@ public class CommandManager
         throw new ArgumentException("Commando informado incorreto...");
     }
 
-    public (bool, string, string) GetCommandTupla(string unformatedCommand)
+    public static (bool, string, string) GetCommandTupla(string unformatedCommand)
     {
+        if (unformatedCommand.Trim().ToLower() == "exit")
+            return (false, "exit", "");
+
         var commandList = MountCommandRegex.Match(unformatedCommand).Groups.Values.Select(v => v.Value).Skip(1).Take(3).ToArray();
         var argumentErrorMessage = "Informe o comando corretamente: ex: {host} {option} {argument}";
 
