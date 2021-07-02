@@ -61,7 +61,7 @@ public class Client
     }
 
 
-    public void EstabilishConnection(ConectionServer cnserver)
+    public bool EstabilishConnection(ConectionServer cnserver)
     {
         Console.WriteLine("Estabelecendo conexão...");
         var remoteAddress = new IPEndPoint(cnserver.IPAddress, cnserver.Port.Value);
@@ -69,8 +69,18 @@ public class Client
         try
         {
             socket.Connect(remoteAddress);
-            var retorno = CommunicationManager.SendMessageAndReceivedMessage(socket, cnserver.username + "||" + cnserver.senha);
-            Console.WriteLine("Você se conectou ao endereço {0}", socket.RemoteEndPoint.ToString());
+            var tokenAuth = SessionAuth.GerateTokenByte(cnserver.username, cnserver.senha);
+            var byteMessage = CommunicationManager.SendMessageAndReceivedMessage(socket, tokenAuth);
+            var message = Encoding.ASCII.GetString(byteMessage);
+
+            if (message == "authorization")
+                Console.WriteLine("Você se conectou ao endereço {0}", socket.RemoteEndPoint.ToString());
+            else
+            {
+                Console.WriteLine("Usuário ou senha inválidos");
+                return false;
+            }
+            return true;
         }
         catch (SocketException se)
         {
@@ -80,6 +90,7 @@ public class Client
         {
             Console.WriteLine("Unexpected exception : {0}", e.ToString());
         }
+        return false;
     }
 
 }

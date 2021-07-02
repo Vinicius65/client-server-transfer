@@ -31,8 +31,14 @@ public class Program
     public static void RunClient()
     {
         var client = new Client();
-        var remoteAdress = Menu.GetConnection();
-        client.EstabilishConnection(remoteAdress);
+
+        var isAuth = false;
+        do
+        {
+            var remoteAdress = Menu.GetConnection();
+            isAuth = client.EstabilishConnection(remoteAdress);
+        } while (!isAuth);
+
         Menu.CommandsMenu();
         while (true)
         {

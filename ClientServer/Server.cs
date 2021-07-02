@@ -8,12 +8,12 @@ using System.Text;
 public class Server
 {
     private Socket socketServer;
-    string usuario = "admin";
-    string senha = "123";
+    private SessionAuth sessionAuth = new();
     public void StartListening()
     {
         Linten();
-        ConnectionLoop();
+        var socket = AuthLoop();
+        ConnectionLoop(socket);
     }
 
     public void Linten()
@@ -30,33 +30,44 @@ public class Server
         Console.WriteLine($"Esperando conexão no ip {ipAddress} e porta {port}...");
     }
 
-
-    public void ConnectionLoop()
+    public Socket AuthLoop()
     {
-
-        //solicitar aqui usuario e senha
-        Socket socket = socketServer.Accept();
-        var bytesReceived = CommunicationManager.ReceivedBytes(socket);
-        var usernameSenha = Encoding.ASCII.GetString(bytesReceived);
-        string[] acesso = usernameSenha.Split("||");
-
-        if (acesso[0] == usuario && acesso[1] == senha)
+        var isAuth = false;
+        do
         {
-            while (true)
+            Socket socket = socketServer.Accept();
+            var bytesReceived = CommunicationManager.ReceivedBytes(socket);
+            var token = Encoding.ASCII.GetString(bytesReceived);
+            isAuth = sessionAuth.IsAuth(token);
+            if (!isAuth)
             {
-                try
-                {
-                    HandleServerCommand(socket);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
+                socket.Send(Encoding.ASCII.GetBytes("not authorization"));
+                Console.WriteLine("not authorization");
+                socket.Dispose();
             }
-        }
-        else
+            else
+            {
+                Console.WriteLine("authorization");
+                socket.Send(Encoding.ASCII.GetBytes("authorization"));
+                return socket;
+            }
+        } while (!isAuth);
+        return null;
+    }
+
+
+    public void ConnectionLoop(Socket socket)
+    {
+        while (true)
         {
-            Console.WriteLine("Usuario ou senha invalida");
+            try
+            {
+                HandleServerCommand(socket);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
     }
 

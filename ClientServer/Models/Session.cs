@@ -2,19 +2,23 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 
-public class Session
+public class SessionAuth
 {
-    public string Username { get; }
-    public readonly string _password;
-    public byte[] Token { get; }
+    public string Username { get; } = "master";
+    public readonly string _password = "sa";
+    public string Token { get; }
+    public SessionAuth() => Token = GerateTokenString(Username, _password);
 
-    public Session(string username, string password)
+    public static string GerateTokenString(string username, string password)
     {
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) throw new ArgumentNullException("Informe um usuário e senha válidos");
-        Username = username;
-        _password = password;
-
         using var mySHA256 = SHA256.Create();
-        Token = mySHA256.ComputeHash(Encoding.ASCII.GetBytes($"{Username}{_password}")); ;
+        var bytesToken = mySHA256.ComputeHash(Encoding.ASCII.GetBytes($"{username}{password}"));
+        return Encoding.ASCII.GetString(bytesToken);
     }
+    public static byte[] GerateTokenByte(string username, string password)
+    {
+        using var mySHA256 = SHA256.Create();
+        return mySHA256.ComputeHash(Encoding.ASCII.GetBytes($"{username}{password}"));
+    }
+    public bool IsAuth(string token) => token == Token;
 }
