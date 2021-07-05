@@ -1,3 +1,8 @@
+// Para rodar é necessário instalar
+// ou o docker (procurar install docker {seu_sistema_operacional})
+// ou o sdk 5.0 do dotnet (procurar install sdk dotnet 5.0 {seu_sistema_operacional})
+
+
 // criar a rede compartilhada entre os dois containers
 
 docker network create rede-docker
