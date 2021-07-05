@@ -21,7 +21,7 @@ public static class CommunicationManager
 
     public static byte[] ReceivedBytes(Socket socket)
     {
-        var lenArray = 10240;
+        var lenArray = 1024;
         var byteList = new List<byte[]>();
         byte[] receivedByte = new byte[lenArray];
 
