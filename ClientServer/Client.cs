@@ -24,8 +24,8 @@ public class Client
             try
             {
                 var bytesFileLocal = CommandManager.RunCommand(option, argument);
-                CommunicationManager.SendMessageAndReceivedMessage(socket, $"{option} {argument}");
-                var bytesResponse = CommunicationManager.SendMessageAndReceivedMessage(socket, bytesFileLocal);
+                CommunicationManager.SendMessageAndReceivedMessage(socket, $"{option} {argument}", 512);
+                var bytesResponse = CommunicationManager.SendMessageAndReceivedMessage(socket, bytesFileLocal, 10240);
                 Console.WriteLine(Encoding.ASCII.GetString(bytesResponse));
             }
             catch (Exception ex)
@@ -39,7 +39,7 @@ public class Client
                 CommunicationManager.ExitClientAndSendExitServer(socket);
             else
             {
-                var bytesResponse = CommunicationManager.SendMessageAndReceivedMessage(socket, $"{option} {argument}");
+                var bytesResponse = CommunicationManager.SendMessageAndReceivedMessage(socket, $"{option} {argument}", 10240);
                 var stringRespose = Encoding.ASCII.GetString(bytesResponse);
                 if (option == "down")
                 {
@@ -70,7 +70,7 @@ public class Client
         {
             socket.Connect(remoteAddress);
             var tokenAuth = SessionAuth.GerateTokenByte(cnserver.username, cnserver.senha);
-            var byteMessage = CommunicationManager.SendMessageAndReceivedMessage(socket, tokenAuth);
+            var byteMessage = CommunicationManager.SendMessageAndReceivedMessage(socket, tokenAuth, 512);
             var message = Encoding.ASCII.GetString(byteMessage);
 
             if (message == "authorization")

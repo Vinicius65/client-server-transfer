@@ -21,6 +21,8 @@ EXPOSE 7777
 
 FROM base AS final
 WORKDIR /app
-COPY ClientServer/teste.txt .
+COPY teste.txt .
+COPY video.mp4 .
+
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "client-server-transfer.dll"]

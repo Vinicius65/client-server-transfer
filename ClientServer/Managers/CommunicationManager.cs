@@ -7,21 +7,36 @@ using System.Net.Sockets;
 using System.Text;
 public static class CommunicationManager
 {
-    public static byte[] SendMessageAndReceivedMessage(Socket socket, string stringSend)
+    public static byte[] SendMessageAndReceivedMessage(Socket socket, string stringSend, int bytesLen)
     {
         var bytesSend = Encoding.ASCII.GetBytes(stringSend);
-        socket.Send(bytesSend);
-        return ReceivedBytes(socket);
+        SendBytes(socket, bytesSend, bytesLen);
+        return ReceivedBytes(socket, bytesLen);
     }
-    public static byte[] SendMessageAndReceivedMessage(Socket socket, byte[] bytesSend)
+    public static byte[] SendMessageAndReceivedMessage(Socket socket, byte[] bytesSend, int bytesLen)
     {
-        socket.Send(bytesSend);
-        return ReceivedBytes(socket);
+        SendBytes(socket, bytesSend, bytesLen);
+        return ReceivedBytes(socket, bytesLen);
     }
 
-    public static byte[] ReceivedBytes(Socket socket)
+    public static void SendBytes(Socket socket, byte[] byteArray, int sendLenBytes)
     {
-        var lenArray = 1024;
+        var skip = 0;
+        var partialByte = byteArray.Skip(skip).Take(sendLenBytes);
+        Console.WriteLine("Iniciando envio");
+        do
+        {
+            socket.Send(partialByte.ToArray());
+            skip += sendLenBytes;
+            partialByte = byteArray.Skip(skip).Take(sendLenBytes);
+        } while (partialByte.Count() != 0);
+        Console.WriteLine("Envio finalizado");
+    }
+
+
+    public static byte[] ReceivedBytes(Socket socket, int len)
+    {
+        var lenArray = len;
         var byteList = new List<byte[]>();
         byte[] receivedByte = new byte[lenArray];
 

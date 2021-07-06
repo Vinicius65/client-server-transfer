@@ -36,7 +36,7 @@ public class Server
         do
         {
             Socket socket = socketServer.Accept();
-            var bytesReceived = CommunicationManager.ReceivedBytes(socket);
+            var bytesReceived = CommunicationManager.ReceivedBytes(socket, 512);
             var token = Encoding.ASCII.GetString(bytesReceived);
             isAuth = sessionAuth.IsAuth(token);
             if (!isAuth)
@@ -73,7 +73,7 @@ public class Server
 
     public static void HandleServerCommand(Socket socket)
     {
-        var bytesReceived = CommunicationManager.ReceivedBytes(socket);
+        var bytesReceived = CommunicationManager.ReceivedBytes(socket, 512);
         var command = Encoding.ASCII.GetString(bytesReceived);
         var option = command.Split(" ")[0];
         var argument = command.Split(" ").Skip(1).FirstOrDefault();
@@ -87,7 +87,7 @@ public class Server
         else if (option == "up")
         {
             socket.Send(Encoding.ASCII.GetBytes("Aguardando arquivo"));
-            var bytesFile = CommunicationManager.ReceivedBytes(socket);
+            var bytesFile = CommunicationManager.ReceivedBytes(socket, 10240);
             string pathFile = Util.GetFilePathToSave(argument);
             File.WriteAllBytes(pathFile, bytesFile);
             socket.Send(Encoding.ASCII.GetBytes("Feito upload do arquivo"));
@@ -97,7 +97,7 @@ public class Server
             try
             {
                 var resultBytes = CommandManager.RunCommand(option, argument);
-                socket.Send(resultBytes);
+                CommunicationManager.SendBytes(socket, resultBytes, 10240);
 
             }
             catch (Exception)
